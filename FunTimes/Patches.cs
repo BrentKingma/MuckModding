@@ -1,4 +1,6 @@
 ﻿using HarmonyLib;
+using System;
+using System.Collections.Generic;
 using System.Reflection;
 
 namespace FunTimes
@@ -14,7 +16,7 @@ namespace FunTimes
         [HarmonyPostfix]
         static void PostFindMobCap()
         {
-            GameLoop.currentMobCap *= BaseAlterations.instance.configMobMulti.Value;
+            GameLoop.currentMobCap *= Configs.configMobMulti.Value;
         }
         [HarmonyPatch(typeof(ChatBox), "ChatCommand")]
         [HarmonyPrefix]
@@ -96,49 +98,6 @@ namespace FunTimes
                 nightEnable = false;
             }
         }
-
-        [HarmonyPatch()]
-        static MethodInfo SendToAllTCP(Packet packet)
-        {
-            return typeof(ServerSend).GetMethod("SendTCPDataToAll", BindingFlags.NonPublic | BindingFlags.Static);
-        }
-        [HarmonyPatch(typeof(LocalClient), "InitializeClientData")]
-        [HarmonyPostfix]
-        static void PostInitializeClientData()
-        {
-            LocalClient.packetHandlers.Add(70, SharePowerups.GetSharedPowerup);
-        }
-        [HarmonyPatch(typeof(PowerupInventory), "AddPowerup")]
-        [HarmonyPrefix]
-        static bool PreAddPowerup(string name, int powerupId, int objectId)
-        {
-            if(name == null || name == "")
-            {
-                name = ItemManager.Instance.allPowerups[powerupId].name;
-            }
-            return true;
-        }
-        [HarmonyPatch(typeof(PowerupInventory), "AddPowerup")]
-        [HarmonyPostfix]
-        static void PostAddPowerup(string name, int powerupId, int objectId)
-        {
-            ServerSend.DropResources(981, powerupId, objectId);
-        }
-        [HarmonyPatch(typeof(ServerSend), "DropResources")]
-        [HarmonyPrefix]
-        static bool PreDropResources(int fromClient, int dropTableId, int droppedItemID)
-        {
-            if(fromClient == 981)//Obscure number to ensure success
-            {
-                using(Packet packet = new Packet(70))
-                {
-                    packet.Write(dropTableId);
-                    packet.Write(droppedItemID);
-                    SendToAllTCP(packet);
-                }
-                return false;
-            }
-            return true;
-        }
     }
 }
+

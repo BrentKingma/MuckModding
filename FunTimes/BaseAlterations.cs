@@ -1,6 +1,6 @@
 ﻿using BepInEx;
-using BepInEx.Configuration;
 using HarmonyLib;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,8 +9,7 @@ namespace FunTimes
     [BepInPlugin("com.github.brentkingma.basealterations", "Base Alterations", "0.0.1")]
     public class BaseAlterations : BaseUnityPlugin
     {
-        public ConfigEntry<int> configMobMulti;
-        public ConfigEntry<bool> configShareItem;
+
         public GameObject Canvas = null;
         public GameObject uiObject;
 
@@ -28,20 +27,15 @@ namespace FunTimes
                 Destroy(this);
             }
 
-            configMobMulti = Config.Bind("Multies",
-                                         "MobMulti",
-                                         1,
-                                         "The number multiplied by calculated mob count");
-            configShareItem = Config.Bind("General",
-                                         "ShareItem",
-                                         false,
-                                         "If one person picks up an item, everyone gets it");
+            SetupConfigs();
+            SharePowerups.GetInfo();
 
             //CreateUI();
             Logger.LogMessage("Hello");
             
             harmony = new Harmony("com.github.brentkingma.basealterations");
             harmony.PatchAll(typeof(Patches));
+            harmony.PatchAll(typeof(SharePowerups));
         }
 
         private void OnDestroy()
@@ -52,6 +46,18 @@ namespace FunTimes
         public void Log(string message)
         {
             Logger.LogMessage(message);
+        }
+
+        private void SetupConfigs()
+        {
+            Configs.configMobMulti = Config.Bind("Multies",
+                                         "MobMulti",
+                                         1,
+                                         "The number multiplied by calculated mob count");
+            Configs.configShareItem = Config.Bind("General",
+                                         "ShareItem",
+                                         false,
+                                         "If one person picks up an item, everyone gets it");
         }
 
         private void CreateUI()
@@ -86,5 +92,7 @@ namespace FunTimes
             Logger.LogMessage("Create UI element");
             uiObject.SetActive(true);
         }
+
+
     }
 }
