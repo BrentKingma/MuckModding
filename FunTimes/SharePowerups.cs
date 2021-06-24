@@ -7,7 +7,6 @@ namespace FunTimes
     class SharePowerups
     {
         private static MethodInfo ServerSendToAllTCP;
-        private static MethodInfo ClientSendTCP;
 
         [HarmonyPatch(typeof(LocalClient), "InitializeClientData")]
         [HarmonyPostfix]
@@ -59,17 +58,11 @@ namespace FunTimes
             try
             {
                 ServerSendToAllTCP = typeof(ServerSend).GetMethod("SendTCPDataToAll", BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance, null, new Type[] { typeof(Packet) }, null);
-                ClientSendTCP = typeof(ClientSend).GetMethod("SendTCPData", BindingFlags.NonPublic | BindingFlags.Static, null, new Type[] { typeof(Packet) }, null);
             }
             catch (Exception e)
             {
                 BaseAlterations.instance.Log(e.Message);
             }
-
-            BaseAlterations.instance.Log("########################");
-            BaseAlterations.instance.Log(ServerSendToAllTCP.Name);
-            BaseAlterations.instance.Log(ClientSendTCP.Name);
-            BaseAlterations.instance.Log("########################");
         }
 
         static void GetSharedPowerup(Packet packet)
